@@ -1,128 +1,87 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import sys
-import numpy as np
 import tensorflow as tf
-import common as c
-import pprint
+import time
+import common
+import datetime
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+starttime = datetime.datetime.now()
 
-sys.path.append('../')
+data = common.Data("mnist/mnist_train/mnist_train_data", "mnist/mnist_train/mnist_train_label", "mnist/mnist_test/mnist_test_data",
+                                             "mnist/mnist_test/mnist_test_label", 200, 45)
 
-pp = pprint.PrettyPrinter()
-flags = tf.app.flags
-flags.DEFINE_string("gpu", "0", "GPU(s) to use. [0]")
-flags.DEFINE_integer("save_step", 500, "The interval of saving checkpoints[500]")
-flags.DEFINE_string("checkpoint", "checkpoint", "Directory name to save the checkpoints [checkpoint]")
-flags.DEFINE_string("log", "summary", "log [log]")
-flags.DEFINE_integer("epoch", 100, "Epoch[10]")
-flags.DEFINE_string("model_dir", "model", "Model Path")
-flags.DEFINE_string("train_data_file", "../../mnist/mnist_train/mnist_train_data", "Train data file")
-flags.DEFINE_string("train_label_file", "../../mnist/mnist_train/mnist_train_label", "Train label file")
-flags.DEFINE_string("test_data_file", "../../mnist/mnist_test/mnist_test_data", "Test data file")
-flags.DEFINE_string("test_label_file", "../../mnist/mnist_test/mnist_test_label", "Test label file")
-flags.DEFINE_integer("fig_w", 45, "Image Size")
-flags.DEFINE_integer("batch_size", 100, "Batch Size")
-flags.DEFINE_integer("epochs", 100, "Epoch")
-flags.DEFINE_float("learning_rate", 0.001, "Learning Rate")
-FLAGS = flags.FLAGS
 
-tf.logging.set_verbosity(tf.logging.INFO)
+def weight_variable(shape, name):
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial, name=name)
 
-def cnn(features, labels, mode):
-    # [batch_size, width, height, channels]
-    input_layer = tf.reshape(features["x"], [-1, 45, 45, 1])
 
-    conv1 = tf.layers.conv2d(
-        inputs=input_layer,
-        filters=32,
-        kernel_size=[5, 5],
-        padding="same",
-        activation=tf.nn.relu
-    )
-    # in 45*45 32 out 15*15 64
-    pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[3, 3], strides=3)
+def bias_variable(shape, name):
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial, name=name)
 
-    conv2 = tf.layers.conv2d(
-        inputs=pool1,
-        filters=64,
-        kernel_size=[5, 5],
-        padding="same",
-        activation=tf.nn.relu
-    )
-    # in 15*15 64 out 5*5 64
-    pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[3, 3], strides=3)
 
-    pool2_flat = tf.reshape(pool2, [-1, 5 * 5 * 64])
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-    dense = tf.layers.dense(inputs=pool2_flat, units=1024, activation=tf.nn.relu)
 
-    dropout = tf.layers.dropout(
-        inputs=dense, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
-    logits = tf.layers.dense(inputs=dropout, units=10)
+def max_pool_3x3(x, name):
+    return tf.nn.max_pool(x, ksize=[1, 3, 3, 1], strides=[1, 3, 3, 1], padding='SAME', name=name)
 
-    predictions = {
-        # Generate predictions (for PREDICT and EVAL mode)
-        "classes": tf.argmax(input=logits, axis=1),
-        # Add `softmax_tensor` to the graph. It is used for PREDICT and by the
-        # `logging_hook`.
-        "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
-    }
 
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
+graph = tf.Graph()
+with graph.as_default():
+    x = tf.placeholder(tf.float32, shape=[None, 45*45], name="input")
+    y_ = tf.placeholder(tf.float32, shape=[None, 10], name="labels")
+    W_conv1 = weight_variable([3, 3, 1, 32], name="W_conv1")
+    b_conv1 = bias_variable([32], name="b_conv1")
+    x_image = tf.reshape(x, [-1, 45, 45, 1], name="x_image")
+    h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1, name="h_conv1")
+    h_pool1 = max_pool_3x3(h_conv1, name="h_pool1")
+    print(h_pool1.shape)
+    W_conv2 = weight_variable([3, 3, 32, 64], name="W_conv2")
+    b_conv2 = bias_variable([64], name="b_conv2")
+    h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name="h_conv2")
+    h_pool2 = max_pool_3x3(h_conv2, name="h_pool2")
+    print(h_pool2.shape)
+    W_fc1 = weight_variable([5 * 5 * 64, 1024], name="W_fc1")
+    b_fc1 = bias_variable([1024], name="b_fc1")
 
-    loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=FLAGS.learning_rate)
-        train_op = optimizer.minimize(
-            loss=loss,
-            global_step=tf.train.get_global_step())
-        return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
-    eval_metric_ops = {
-        "accuracy": tf.metrics.accuracy(
-            labels=labels, predictions=predictions["classes"])}
-    return tf.estimator.EstimatorSpec(
-        mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 5*5*64], name="h_pool2_flat")
+    h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1, name="h_fc1")
 
-def main(_):
-    pp.pprint(flags.FLAGS.__flags)
-    sys.stdout = os.fdopen(sys.__stdout__.fileno(), 'w', 0)
-    if not os.path.isdir(FLAGS.checkpoint):
-        os.mkdir(FLAGS.checkpoint)
-    if not os.path.isdir(FLAGS.log):
-        os.mkdir(FLAGS.log)
+    keep_prob = tf.placeholder(tf.float32)
+    h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
-    train_x, train_y, test_x, test_y = c.readData(FLAGS.train_data_file, FLAGS.train_label_file, FLAGS.test_data_file,
-                                                FLAGS.test_label_file, FLAGS.fig_w)
+    W_fc2 = weight_variable([1024, 10], name="W_fc2")
+    b_fc2 = bias_variable([10], name="b_fc2")
+    y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+    with tf.name_scope('cross_entropy'):
+        cross_entropy = tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv), name="cross_entropy")
+    tf.summary.scalar('loss', cross_entropy)
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('accuracy', accuracy)
+    train_writer = tf.summary.FileWriter('train_ex3/{}'.format(int(time.time())), graph)
+    merged = tf.summary.merge_all()
+    saver = tf.train.Saver(tf.global_variables())
 
-    mnist_classifier = tf.estimator.Estimator(
-        model_fn=cnn, model_dir=FLAGS.model_dir)
-
-    tensors_to_log = {"probabilities": "softmax_tensor"}
-    logging_hook = tf.train.LoggingTensorHook(
-        tensors=tensors_to_log, every_n_iter=50)
-
-    train_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"x": train_x},
-        y=train_y,
-        batch_size=100,
-        num_epochs=None,
-        shuffle=True)
-    mnist_classifier.train(
-        input_fn=train_input_fn,
-        steps=7000)
-
-    # Evaluate the model and print results
-    test_input = tf.estimator.inputs.numpy_input_fn(
-        x={"x": test_x},
-        y=test_y,
-        num_epochs=1,
-        shuffle=False)
-    eval_results = mnist_classifier.evaluate(input_fn=test_input)
-    print(eval_results)
-
-if __name__ == '__main__':
-    tf.app.run()
+with tf.Session(graph=graph) as sess:
+    sess.run(tf.global_variables_initializer())
+    starttime_ = datetime.datetime.now()
+    for i in range(30000):
+        batch_x, batch_y = data.next_batch()
+        summary, _, acc = sess.run([merged, train_step, accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
+        train_writer.add_summary(summary, i)
+        if i % 100 == 0:
+            acc = sess.run([accuracy], feed_dict={x:batch_x, y_: batch_y, keep_prob: 1.0})
+            endtime_ = datetime.datetime.now()
+            print(endtime_ - starttime_)
+            print('step: {}, acc: {}'.format(i, acc))
+            starttime_ = datetime.datetime.now()
+    acc = sess.run([accuracy], feed_dict={x: data.test_x, y_: data.test_y, keep_prob: 1.0})
+endtime = datetime.datetime.now()
+print(endtime - starttime)
+print("ACC:")
+print(acc)

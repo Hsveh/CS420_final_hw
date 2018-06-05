@@ -1,13 +1,22 @@
 import tensorflow as tf
 import time
-import common
 import datetime
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+import sys
+sys.path.append("../")
+import common
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+exp_index = 0
+batch_size = 500
+max_iter = 60000
+log_dir = "log/Exp-" + str(exp_index)
+
+if os.path.exists(log_dir):
+    os.remove(log_dir)
+
 starttime = datetime.datetime.now()
 
-data = common.Data("mnist/mnist_train/mnist_train_data", "mnist/mnist_train/mnist_train_label", "mnist/mnist_test/mnist_test_data",
-                                             "mnist/mnist_test/mnist_test_label", 200, 45)
+data = common.Data("../mnist/mnist_train/mnist_train_data", "../mnist/mnist_train/mnist_train_label", "../mnist/mnist_test/mnist_test_data", "../mnist/mnist_test/mnist_test_label", batch_size, 45)
 
 
 def weight_variable(shape, name):
@@ -63,22 +72,26 @@ with graph.as_default():
     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar('accuracy', accuracy)
-    train_writer = tf.summary.FileWriter('train_ex3/{}'.format(int(time.time())), graph)
+    train_writer = tf.summary.FileWriter((log_dir+"/train"), graph)
+    test_writer = tf.summary.FileWriter((log_dir+"/test"), graph)
     merged = tf.summary.merge_all()
     saver = tf.train.Saver(tf.global_variables())
 
 with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
     starttime_ = datetime.datetime.now()
-    for i in range(30000):
+    for i in range(max_iter):
         batch_x, batch_y = data.next_batch()
-        summary, _, acc = sess.run([merged, train_step, accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
-        train_writer.add_summary(summary, i)
+        _ = sess.run([train_step], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
         if i % 100 == 0:
-            acc = sess.run([accuracy], feed_dict={x:batch_x, y_: batch_y, keep_prob: 1.0})
+            # acc = sess.run([accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 1.0})
+            summary, acc = sess.run([merged, accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 1.0})
+            train_writer.add_summary(summary, i)
+            summary, t_acc = sess.run([merged, accuracy], feed_dict={x: data.test_x, y_: data.test_y, keep_prob: 1.0})
+            test_writer.add_summary(summary, i)
             endtime_ = datetime.datetime.now()
             print(endtime_ - starttime_)
-            print('step: {}, acc: {}'.format(i, acc))
+            print('step: {}, accuracy: {}, test_acc: {}'.format(i, acc, t_acc))
             starttime_ = datetime.datetime.now()
     acc = sess.run([accuracy], feed_dict={x: data.test_x, y_: data.test_y, keep_prob: 1.0})
 endtime = datetime.datetime.now()

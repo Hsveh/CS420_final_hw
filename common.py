@@ -15,16 +15,16 @@ class Data():
         self.ptr = 0
         self.size = 0
         self.size_test = 0
-        self.train_x, self.train_y, self.test_x, self.test_y = self.read_data()
+        self.train_x, self.train_y, self.test_x, self.test_y, self.test_y_no_one_hot = self.read_data()
         if self.batch_size > self.size:
             return -1
 
     def read_data(self):
-        train_x = np.fromfile(self.train_x_path, dtype=np.uint8)
+        train_x = np.load(self.train_x_path)
         train_y = np.fromfile(self.train_y_path, dtype=np.uint8)
         self.size = len(train_y)
         train_x = train_x.reshape(self.size, self.fig_w**2)
-        test_x = np.fromfile(self.test_x_path, dtype=np.uint8)
+        test_x = np.load(self.test_x_path)
         test_y = np.fromfile(self.test_y_path, dtype=np.uint8)
         self.size_test = len(test_y)
         test_x = test_x.reshape(self.size_test, self.fig_w**2)
@@ -38,7 +38,7 @@ class Data():
             train_y_[i, train_y[i]] = 1
         for i in range(self.size_test):
             test_y_[i, test_y[i]] = 1
-        return train_x, train_y_, test_x, test_y_
+        return train_x, train_y_, test_x, test_y_, test_y
 
     def next_batch(self):
         if self.ptr + self.batch_size >= self.size:

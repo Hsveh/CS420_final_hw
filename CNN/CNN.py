@@ -2,21 +2,25 @@ import tensorflow as tf
 import time
 import datetime
 import os
-import sys
-sys.path.append("../")
+1
 import common
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-exp_index = 0
-batch_size = 500
-max_iter = 60000
-log_dir = "log/Exp-" + str(exp_index)
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+exp_v = "1.4.1"
+batch_size = 1500
+fig = 28
+max_iter = 300000
+log_dir = "log/" + exp_v
+model_dir = "model/" + exp_v
+model_save_iter = 5000
 if os.path.exists(log_dir):
     os.remove(log_dir)
-
+if os.path.exists(model_dir):
+    os.remove(model_dir)
+os.makedirs(log_dir)
+os.makedirs(model_dir)
 starttime = datetime.datetime.now()
 
-data = common.Data("../mnist/mnist_train/mnist_train_data", "../mnist/mnist_train/mnist_train_label", "../mnist/mnist_test/mnist_test_data", "../mnist/mnist_test/mnist_test_label", batch_size, 45)
+data = common.Data("../mnist/mnist_train/train_data.npy", "../mnist/mnist_train/mnist_train_label", "../mnist/mnist_test/test_data.npy", "../mnist/mnist_test/mnist_test_label", batch_size, 28)
 
 
 def weight_variable(shape, name):
@@ -34,31 +38,31 @@ def conv2d(x, W):
 
 
 def max_pool_3x3(x, name):
-    return tf.nn.max_pool(x, ksize=[1, 3, 3, 1], strides=[1, 3, 3, 1], padding='SAME', name=name)
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
 
 
 graph = tf.Graph()
 with graph.as_default():
-    x = tf.placeholder(tf.float32, shape=[None, 45*45], name="input")
+    x = tf.placeholder(tf.float32, shape=[None, fig*fig], name="input")
     y_ = tf.placeholder(tf.float32, shape=[None, 10], name="labels")
-    W_conv1 = weight_variable([3, 3, 1, 32], name="W_conv1")
+    W_conv1 = weight_variable([2, 2, 1, 32], name="W_conv1")
     b_conv1 = bias_variable([32], name="b_conv1")
-    x_image = tf.reshape(x, [-1, 45, 45, 1], name="x_image")
+    x_image = tf.reshape(x, [-1, fig, fig, 1], name="x_image")
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1, name="h_conv1")
     h_pool1 = max_pool_3x3(h_conv1, name="h_pool1")
     print(h_pool1.shape)
-    W_conv2 = weight_variable([3, 3, 32, 64], name="W_conv2")
+    W_conv2 = weight_variable([2, 2, 32, 64], name="W_conv2")
     b_conv2 = bias_variable([64], name="b_conv2")
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name="h_conv2")
     h_pool2 = max_pool_3x3(h_conv2, name="h_pool2")
     print(h_pool2.shape)
-    W_fc1 = weight_variable([5 * 5 * 64, 1024], name="W_fc1")
+    W_fc1 = weight_variable([7 * 7 * 64, 1024], name="W_fc1")
     b_fc1 = bias_variable([1024], name="b_fc1")
 
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 5*5*64], name="h_pool2_flat")
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64], name="h_pool2_flat")
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1, name="h_fc1")
 
-    keep_prob = tf.placeholder(tf.float32)
+    keep_prob = tf.placeholder(tf.float32, name="keep_prob")
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     W_fc2 = weight_variable([1024, 10], name="W_fc2")
@@ -76,7 +80,7 @@ with graph.as_default():
     test_writer = tf.summary.FileWriter((log_dir+"/test"), graph)
     merged = tf.summary.merge_all()
     saver = tf.train.Saver(tf.global_variables())
-
+    tf.add_to_collection('pred_network', y_conv)
 with tf.Session(graph=graph) as sess:
     sess.run(tf.global_variables_initializer())
     starttime_ = datetime.datetime.now()
@@ -93,7 +97,11 @@ with tf.Session(graph=graph) as sess:
             print(endtime_ - starttime_)
             print('step: {}, accuracy: {}, test_acc: {}'.format(i, acc, t_acc))
             starttime_ = datetime.datetime.now()
+        if i % model_save_iter == 0:
+            saver.save(sess, model_dir + '/' + str(i) + '/' + str(i))
     acc = sess.run([accuracy], feed_dict={x: data.test_x, y_: data.test_y, keep_prob: 1.0})
+    if i == max_iter-1:
+        saver.save(sess, model_dir + '/' + str(max_iter) + '/' + str(max_iter))
 endtime = datetime.datetime.now()
 print(endtime - starttime)
 print("ACC:")

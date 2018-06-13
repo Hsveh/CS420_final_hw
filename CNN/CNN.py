@@ -2,7 +2,6 @@ import tensorflow as tf
 import time
 import datetime
 import os
-1
 import common
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 exp_v = "1.4.1"
@@ -87,7 +86,7 @@ with tf.Session(graph=graph) as sess:
     for i in range(max_iter):
         batch_x, batch_y = data.next_batch()
         _ = sess.run([train_step], feed_dict={x: batch_x, y_: batch_y, keep_prob: 0.5})
-        if i % 100 == 0:
+        if i % 500 == 0:
             # acc = sess.run([accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 1.0})
             summary, acc = sess.run([merged, accuracy], feed_dict={x: batch_x, y_: batch_y, keep_prob: 1.0})
             train_writer.add_summary(summary, i)

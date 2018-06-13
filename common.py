@@ -15,7 +15,7 @@ class Data():
         self.ptr = 0
         self.size = 0
         self.size_test = 0
-        self.train_x, self.train_y, self.test_x, self.test_y, self.test_y_no_one_hot = self.read_data()
+        self.train_x, self.train_y, self.test_x, self.test_y, self.train_y_no_one_hot, self.test_y_no_one_hot = self.read_data()
         if self.batch_size > self.size:
             return -1
 
@@ -38,7 +38,7 @@ class Data():
             train_y_[i, train_y[i]] = 1
         for i in range(self.size_test):
             test_y_[i, test_y[i]] = 1
-        return train_x, train_y_, test_x, test_y_, test_y
+        return train_x, train_y_, test_x, test_y_, train_y, test_y
 
     def next_batch(self):
         if self.ptr + self.batch_size >= self.size:

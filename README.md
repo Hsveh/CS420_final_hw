@@ -24,11 +24,17 @@ You can download the dataset by click the data set name.
 ## Method
 ### SVM
 Kernel = rbf  
-Only prforms well in crop2  
-<img src="images/svm.png" width="500" />
+Only prforms well in crop2
+<center>
+  <img src="images/svm.png" width="500" />
+<\center>
 ### CNN
-![cnn](images/cnn.png)
-![cnn2](images/cnn2.png)
+<center>
+  <img src="images/cnn.png" width="500" />
+<\center>
+<center>
+  <img src="images/cnn2.png" width="500" />
+<\center>
 ![cnnsvm](images/cnnsvm.png)
 ### Residual Network
 ![resnet](images/ResNet.png)

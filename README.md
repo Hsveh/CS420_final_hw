@@ -26,13 +26,15 @@ You can download the dataset by click the data set name.
 Kernel = rbf  
 Only prforms well in crop2
 
-<div align=center><img src="images/svm.png" width="800" /></div>
+<div align=center><img src="images/svm.png" width="600" /></div>
 
 ### CNN
 
-<div align=center><img src="images/cnn.png" width="500" /></div>
-<div align=center><img src="images/cnn2.png" width="500" /></div>
-<div align=center><img src="images/cnnsvm.png" width="500" /></div>
+<div align=center><img src="images/cnn.png" width="300" /></div>
+
+<div align=center><img src="images/cnn2.png" width="300" /></div>
+
+<div align=center><img src="images/cnnsvm.png" width="300" /></div>
 
 ### Residual Network
 ![resnet](images/ResNet.png)

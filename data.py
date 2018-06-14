@@ -28,7 +28,7 @@ def op1():
     data = common.Data("../mnist/mnist_train/train_data.npy", "../mnist/mnist_train/mnist_train_label",
                        "../mnist/mnist_test/test_data.npy", "../mnist/mnist_test/mnist_test_label", 1, 28)
 
-    res = common.predict('model/SVM1', 60000, data.test_x, 28, "out1")
+    res = common.predict('../CNN/model/SVM1', 60000, data.test_x, 28, "out1")
 
     data_fc = []
     for i in range(len(res)):

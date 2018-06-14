@@ -27,14 +27,14 @@ Kernel = rbf
 Only prforms well in crop2
 <center>
   <img src="images/svm.png" width="500" />
-<\center>
+</center>
 ### CNN
 <center>
   <img src="images/cnn.png" width="500" />
-<\center>
+</center>
 <center>
   <img src="images/cnn2.png" width="500" />
-<\center>
+</center>
 ![cnnsvm](images/cnnsvm.png)
 ### Residual Network
 ![resnet](images/ResNet.png)

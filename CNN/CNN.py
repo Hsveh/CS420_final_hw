@@ -1,25 +1,40 @@
+"""
+CNN with 2 convolution layers , 2 max pooling layers and 2 fc layers
+"""
+
 import tensorflow as tf
-import time
 import datetime
 import os
 import common
+
+"""
+Variable Definition
+
+"CUDA_VISIBLE_DEVICES": GPU devices, if you want to use more than one gpus, set it to "0,1,2......"
+exp_v: experiment vision, log save to log/exp_v, model save to model/exp_v/iteration
+batch_size: 
+"""
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-exp_v = "1.4.1"
+exp_v = "1.16.0"
 batch_size = 1500
 fig = 28
-max_iter = 300000
+max_iter = 1000000
 log_dir = "log/" + exp_v
 model_dir = "model/" + exp_v
 model_save_iter = 5000
+common_path = "../mnist"
+
 if os.path.exists(log_dir):
     os.remove(log_dir)
 if os.path.exists(model_dir):
     os.remove(model_dir)
-os.makedirs(log_dir)
-os.makedirs(model_dir)
+os.makedirs(log_dir, exist_ok=True)
+os.makedirs(model_dir, exist_ok=True)
 starttime = datetime.datetime.now()
 
-data = common.Data("../mnist/mnist_train/train_data.npy", "../mnist/mnist_train/mnist_train_label", "../mnist/mnist_test/test_data.npy", "../mnist/mnist_test/mnist_test_label", batch_size, 28)
+data = common.Data(common_path+"/mnist_train/rotate_train.npy", common_path+"/mnist_train/rotate_label.npy",
+                   common_path+"/mnist_test/test_data.npy", common_path+"/mnist_test/mnist_test_label", batch_size, fig)
 
 
 def weight_variable(shape, name):
@@ -36,7 +51,7 @@ def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
 
-def max_pool_3x3(x, name):
+def max_pool_2x2(x, name):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name=name)
 
 
@@ -48,12 +63,12 @@ with graph.as_default():
     b_conv1 = bias_variable([32], name="b_conv1")
     x_image = tf.reshape(x, [-1, fig, fig, 1], name="x_image")
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1, name="h_conv1")
-    h_pool1 = max_pool_3x3(h_conv1, name="h_pool1")
+    h_pool1 = max_pool_2x2(h_conv1, name="h_pool1")
     print(h_pool1.shape)
     W_conv2 = weight_variable([2, 2, 32, 64], name="W_conv2")
     b_conv2 = bias_variable([64], name="b_conv2")
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2, name="h_conv2")
-    h_pool2 = max_pool_3x3(h_conv2, name="h_pool2")
+    h_pool2 = max_pool_2x2(h_conv2, name="h_pool2")
     print(h_pool2.shape)
     W_fc1 = weight_variable([7 * 7 * 64, 1024], name="W_fc1")
     b_fc1 = bias_variable([1024], name="b_fc1")

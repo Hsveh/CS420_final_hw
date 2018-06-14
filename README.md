@@ -10,7 +10,8 @@
 - Crop image to 28x28 (784 << 2025) (will drop many useless blocks)
 
 ## Data Set
-you can download the dataset by click the data set name
+you can download the dataset by click the data set name  
+
 |Name                                       | Train Size| Test Size | Image Size| Diff|
 |:--:                                           |:--:      |:--:            |:--:  |:--:|
 |[origin](http://cmach.sjtu.edu.cn/course/cs420/projects/mnist.zip)| 60000| 10000| 45| original data|

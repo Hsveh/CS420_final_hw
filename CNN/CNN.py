@@ -12,7 +12,12 @@ Variable Definition
 
 "CUDA_VISIBLE_DEVICES": GPU devices, if you want to use more than one gpus, set it to "0,1,2......"
 exp_v: experiment vision, log save to log/exp_v, model save to model/exp_v/iteration
-batch_size: 
+batch_size: batch size
+fig: image size
+max_iter: max iteration
+log_dir: log file path
+model_save_iter: model file path
+common_path = common path of input data
 """
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"

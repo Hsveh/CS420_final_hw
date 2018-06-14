@@ -1,5 +1,5 @@
 """
-Support Vector Machine(SVM) 
+Support Vector Machine(SVM)
 Without using sklearn package, the performance of this version is a little bit worse and the process time is quite long
 """
 
@@ -24,13 +24,13 @@ common_path = "../mnist"
 
 class optStruct:
     def __init__(self,dataMatIn, classLabels, C, toler, kTup):
-        self.X = dataMatIn  			#feature
-        self.labelMat = classLabels 		#class
+        self.X = dataMatIn  					#feature
+        self.labelMat = classLabels 			#class
         self.C = C                              #C
-        self.tol = toler 			#thresthold
-        self.m = shape(dataMatIn)[0] 		#data row
+        self.tol = toler 						#thresthold
+        self.m = shape(dataMatIn)[0] 			#data row
         self.alphas = mat(zeros((self.m,1)))    #alpha
-        self.b = 0 				#b
+        self.b = 0 				                #b
         self.eCache = mat(zeros((self.m,2))) 	#cache
         self.K = mat(zeros((self.m,self.m))) 	#kernel result
         for i in range(self.m):
@@ -69,7 +69,7 @@ def SMO(dataMatIn, classLabels, C, toler, maxIter,kTup=('lin', 0)):
         if entireSet:
             for i in range(oS.m): #trival all data 
                 alphaPairsChanged += innerL(i,oS)
-                #print("fullSet, iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged)) 	#show info during iteration
+                #print("fullSet, iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged)) 		#show info during iteration
             iter += 1
         else:
             nonBoundIs = nonzero((oS.alphas.A > 0) * (oS.alphas.A < C))[0]
@@ -108,7 +108,7 @@ def innerL(i, oS):
             #print("eta>=0")
             return 0
         oS.alphas[j] -= oS.labelMat[j]*(Ei - Ej)/eta 	#p127 fomula  7.106
-        oS.alphas[j] = clipAlpha(oS.alphas[j],H,L)	#p127 fomula  7.108
+        oS.alphas[j] = clipAlpha(oS.alphas[j],H,L)	 	#p127 fomula  7.108
         updateEk(oS, j)
         if (abs(oS.alphas[j] - alphaJold) < oS.tol): 	#alpha threshold
             #print("j not moving enough")
@@ -196,15 +196,15 @@ def SVM(train_x, test_x, train_y, test_y, kTup):
     :return: data(np.array)
     """
     #get support vector
-	b,alphas = SMO(train_x, train_y, 200, 0.0001, epochs, kTup)
-	datMat=mat(dataArr)
-	labelMat = mat(train_y).transpose()
-	svInd=nonzero(alphas)[0] 
-	sVs=datMat[svInd]
-	labelSV = labelMat[svInd] 
-	print("there are %d Support Vectors" % shape(sVs)[0]) 
-	m,n = shape(datMat) 
-	errorCount = 0
+    b,alphas = SMO(train_x, train_y, 200, 0.0001, epochs, kTup)
+    datMat=mat(dataArr)
+    labelMat = mat(train_y).transpose()
+    svInd=nonzero(alphas)[0] 
+    sVs=datMat[svInd]
+    labelSV = labelMat[svInd] 
+    print("there are %d Support Vectors" % shape(sVs)[0]) 
+    m,n = shape(datMat) 
+    errorCount = 0
 	for i in range(m):
 	    kernelEval = kernelTrans(sVs,datMat[i,:],kTup) #change support vectors into kernel 
 	    predict=kernelEval.T * multiply(labelSV,alphas[svInd]) + b  #p133

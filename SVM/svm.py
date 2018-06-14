@@ -1,5 +1,5 @@
 """
-Support Vector Machine(SVM)
+Support Vector Machine(SVM) 
 Without using sklearn package, the performance of this version is a little bit worse and the process time is quite long
 """
 

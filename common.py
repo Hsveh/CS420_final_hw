@@ -34,7 +34,8 @@ class Data():
         self.train_y_path = train_y
         self.test_x_path = test_x
         self.test_y_path = test_y
-        if (not os.path.exists(train_x)) or (not os.path.exists(train_y)) or (not os.path.exists(test_x)) or (not os.path.exists(test_y)):
+        if (not os.path.exists(train_x)) or (not os.path.exists(train_y)) \
+                or (not os.path.exists(test_x)) or (not os.path.exists(test_y)):
             if logger is None:
                 print("Path Error!")
             else:

@@ -21,7 +21,7 @@ common_path = common path of input data
 """
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-exp_v = "SVM1"
+exp_v = "SVM2"
 batch_size = 1500
 fig = 28
 max_iter = 300000
@@ -38,7 +38,7 @@ if os.path.exists(model_dir):
 os.makedirs(log_dir, exist_ok=True)
 os.makedirs(model_dir, exist_ok=True)
 starttime = datetime.datetime.now()
-
+logger = common.create_logger('CNN_SVM', log_format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 data = common.Data(common_path+"/mnist_train/train_data.npy", common_path+"/mnist_train/mnist_train_label",
                    common_path+"/mnist_test/test_data.npy", common_path+"/mnist_test/mnist_test_label", batch_size, fig)
 
@@ -120,8 +120,8 @@ with tf.Session(graph=graph) as sess:
             summary, t_acc = sess.run([merged, accuracy], feed_dict={x: data.test_x, y_: data.test_y, keep_prob: 1.0})
             test_writer.add_summary(summary, i)
             endtime_ = datetime.datetime.now()
-            print(endtime_ - starttime_)
-            print('step: {}, accuracy: {}, test_acc: {}'.format(i, acc, t_acc))
+            logger.info(endtime_ - starttime_)
+            logger.info('step: {}, accuracy: {}, test_acc: {}'.format(i, acc, t_acc))
             starttime_ = datetime.datetime.now()
         if i % model_save_iter == 0:
             saver.save(sess, model_dir + '/' + str(i) + '/' + str(i))
@@ -129,6 +129,5 @@ with tf.Session(graph=graph) as sess:
     if i == max_iter-1:
         saver.save(sess, model_dir + '/' + str(max_iter) + '/' + str(max_iter))
 endtime = datetime.datetime.now()
-print(endtime - starttime)
-print("ACC:")
-print(acc)
+logger.info(endtime - starttime)
+logger.info('ACC: {}'.format(acc))

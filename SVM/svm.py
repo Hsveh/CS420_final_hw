@@ -69,7 +69,7 @@ def SMO(dataMatIn, classLabels, C, toler, maxIter,kTup=('lin', 0)):
         if entireSet:
             for i in range(oS.m): #trival all data 
                 alphaPairsChanged += innerL(i,oS)
-                #print("fullSet, iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged)) 		#show info during iteration
+                #print("fullSet, iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged)) 	#show info during iteration
             iter += 1
         else:
             nonBoundIs = nonzero((oS.alphas.A > 0) * (oS.alphas.A < C))[0]
@@ -108,7 +108,7 @@ def innerL(i, oS):
             #print("eta>=0")
             return 0
         oS.alphas[j] -= oS.labelMat[j]*(Ei - Ej)/eta 	#p127 fomula  7.106
-        oS.alphas[j] = clipAlpha(oS.alphas[j],H,L)	 #p127 fomula  7.108
+        oS.alphas[j] = clipAlpha(oS.alphas[j],H,L)	#p127 fomula  7.108
         updateEk(oS, j)
         if (abs(oS.alphas[j] - alphaJold) < oS.tol): 	#alpha threshold
             #print("j not moving enough")

@@ -32,8 +32,8 @@ Only prforms well in crop2
 
 <img src="images/cnn.png" width="500" />
 <img src="images/cnn2.png" width="500" />
+<img src="images/cnnsvm.png" width="500" />
 
-![cnnsvm](images/cnnsvm.png)
 ### Residual Network
 ![resnet](images/ResNet.png)
 ### Autoencoder

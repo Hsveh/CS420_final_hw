@@ -24,13 +24,13 @@ common_path = "../mnist"
 
 class optStruct:
     def __init__(self,dataMatIn, classLabels, C, toler, kTup):
-        self.X = dataMatIn  					#feature
-        self.labelMat = classLabels 			#class
+        self.X = dataMatIn  			#feature
+        self.labelMat = classLabels 		#class
         self.C = C                              #C
-        self.tol = toler 						#thresthold
-        self.m = shape(dataMatIn)[0] 			#data row
+        self.tol = toler 			#thresthold
+        self.m = shape(dataMatIn)[0] 		#data row
         self.alphas = mat(zeros((self.m,1)))    #alpha
-        self.b = 0 				                #b
+        self.b = 0 				#b
         self.eCache = mat(zeros((self.m,2))) 	#cache
         self.K = mat(zeros((self.m,self.m))) 	#kernel result
         for i in range(self.m):

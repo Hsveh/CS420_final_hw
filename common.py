@@ -119,13 +119,6 @@ def predict(model_dir, iteration, train, fig, variable="pred_network", logger=No
         else:
             logger.error(meta+' not found')
         return
-    restore = model_dir + '/' + str(iteration) + '/' + str(iteration)
-    if not os.path.exists(restore):
-        if logger is None:
-            print('Error! '+restore+' not found')
-        else:
-            logger.error(restore+' not found')
-        return
 
     res = []
     with tf.Session() as sess:

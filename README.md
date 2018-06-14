@@ -25,7 +25,8 @@ You can download the dataset by click the data set name.
 ### SVM
 Kernel = rbf  
 Only prforms well in crop2
-<img src="images/svm.png" width="500" />
+
+<img src="images/svm.png" width="800" />
 ### CNN
 <img src="images/cnn.png" width="500" />
 <img src="images/cnn2.png" width="500" />

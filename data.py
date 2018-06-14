@@ -1,6 +1,6 @@
 """
     data.py
-
+    generate data for experiments
 """
 import common
 import numpy as np

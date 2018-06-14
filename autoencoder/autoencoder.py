@@ -36,14 +36,17 @@ common_path = "../mnist"
 
 def Autoencoder(train_x, test_x, train_y, test_y):
 	""" Autoencoder training with SVM connected
-	:param path: data file
-	:return: data(np.array)
+	:param train_x: training data
+	:param test_x: testinging data
+	:param train_y: training label
+	:param test_y: testing label
 	"""
 
 	# data preparation
 	train_x = train_x.reshape(train_num, fig_w, fig_w,1)
 	test_x = test_x.reshape(test_num, fig_w, fig_w,1)
 
+	# construct network
 	inputs = Input(shape=(fig_w, fig_w, 1))
 
 	x = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
@@ -62,6 +65,8 @@ def Autoencoder(train_x, test_x, train_y, test_y):
 	model = Model(inputs, decoded)
 
 	model.compile(loss='binary_crossentropy', optimizer='Adadelta', metrics=['accuracy'])
+
+	# train model
 	model.fit(train_x, train_x, epochs=epochs, batch_size=batch_size, shuffle=True, validation_data=(test_x, test_x))
 
 	print("autoencoder training over")
@@ -72,6 +77,7 @@ def Autoencoder(train_x, test_x, train_y, test_y):
 	train_x = train_x.reshape(train_num, fig_w, fig_w, 1)
 	test_x = test_x.reshape(test_num, fig_w, fig_w, 1)
 
+	# get extracted fetures
 	train_output = encoded_model.predict(train_x)
 	test_output = encoded_model.predict(test_x)
 
@@ -94,6 +100,7 @@ def Autoencoder(train_x, test_x, train_y, test_y):
 
 
 def main():
+
 	data = common.Data(common_path+"/mnist_train/train_data.npy", common_path+"/mnist_train/mnist_train_label",
 					common_path+"/mnist_test/test_data.npy", common_path+"/mnist_test/mnist_test_label", fig)
 	train_x = data.train_x
